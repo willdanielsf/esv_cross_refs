@@ -1,8 +1,8 @@
-id,parent
-Root,
-Child 1,Root
-Child 2,Root
-Grandchild 1.1,Child 1
-Grandchild 1.2,Child 1
-Grandchild 2.1,Child 2
-Grandchild 2.2,Child 2
+id,parent,value
+Root,,100
+Group 1,Root,50
+Item 1.1,Group 1,20
+Item 1.2,Group 1,30
+Group 2,Root,50
+Item 2.1,Group 2,25
+Item 2.2,Group 2,25
