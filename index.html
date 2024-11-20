@@ -3,23 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Expandable Tree Table</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Tree Table with Frappe</title>
+  <!-- Include Frappe DataTable CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-datatable/dist/frappe-datatable.min.css">
 </head>
 <body>
-  <table id="tree-table">
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Value</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Rows will be dynamically added here -->
-    </tbody>
-  </table>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <div id="tree-table-container"></div>
+
+  <!-- Include Frappe DataTable JS -->
+  <script src="https://cdn.jsdelivr.net/npm/frappe-datatable/dist/frappe-datatable.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
