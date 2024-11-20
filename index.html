@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tree Chart Viewer</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    .node circle {
-      fill: steelblue;
-    }
-    .node text {
-      font-size: 12px;
-    }
-    .link {
-      fill: none;
-      stroke: #ccc;
-      stroke-width: 2px;
-    }
-  </style>
+  <title>Expandable Tree Table</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Tree Chart Viewer</h1>
-  <div id="tree"></div>
+  <table id="tree-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be dynamically added here -->
+    </tbody>
+  </table>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+
