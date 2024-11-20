@@ -1,66 +1,44 @@
-// Set dimensions
-const width = 800;
-const height = 400;
-const margin = { top: 20, right: 90, bottom: 30, left: 90 };
-
-// Append SVG
-const svg = d3
-  .select("#tree")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-
-// Create a tree layout
-const treeLayout = d3.tree().size([height, width - 160]);
-
-// Load the CSV file
 d3.csv("data.csv").then(data => {
-  // Convert flat CSV data into a hierarchy
+  const tableBody = d3.select("#tree-table tbody");
+
+  // Convert flat data into a hierarchy
   const root = d3.stratify()
-    .id(d => d.id)       // Use `id` as the node name
-    .parentId(d => d.parent)(data); // Use `parent` for relationships
+    .id(d => d.id)
+    .parentId(d => d.parent)(data);
 
-  // Generate the tree
-  treeLayout(root);
+  // Create rows for the table
+  const createRows = (node, depth = 0) => {
+    const row = tableBody.append("tr")
+      .attr("data-id", node.id)
+      .attr("data-parent", node.parent ? node.parent.id : "")
+      .attr("data-expanded", "false")
+      .style("display", depth === 0 ? "" : "none");
 
-  // Links (connections)
-  svg
-    .selectAll(".link")
-    .data(root.links())
-    .enter()
-    .append("path")
-    .attr("class", "link")
-    .attr("d", d3
-      .linkHorizontal()
-      .x(d => d.y)
-      .y(d => d.x)
-    )
-    .attr("fill", "none")
-    .attr("stroke", "#ccc")
-    .attr("stroke-width", 2);
+    // Indent based on depth
+    row.append("td")
+      .style("padding-left", `${depth * 20}px`)
+      .text(node.children ? `▶ ${node.id}` : node.id)
+      .on("click", () => toggleRow(node.id));
 
-  // Nodes (circles and labels)
-  const node = svg
-    .selectAll(".node")
-    .data(root.descendants())
-    .enter()
-    .append("g")
-    .attr("class", "node")
-    .attr("transform", d => `translate(${d.y},${d.x})`);
+    row.append("td").text(node.data.value);
 
-  // Draw circles
-  node
-    .append("circle")
-    .attr("r", 5)
-    .attr("fill", "steelblue");
+    if (node.children) {
+      node.children.forEach(child => createRows(child, depth + 1));
+    }
+  };
 
-  // Add labels
-  node
-    .append("text")
-    .attr("dy", 3)
-    .attr("x", d => (d.children ? -10 : 10))
-    .style("text-anchor", d => (d.children ? "end" : "start"))
-    .text(d => d.data.id);
+  createRows(root);
+
+  // Toggle rows' visibility
+  const toggleRow = id => {
+    const row = d3.select(`[data-id='${id}']`);
+    const isExpanded = row.attr("data-expanded") === "true";
+
+    row.attr("data-expanded", !isExpanded);
+    row.select("td").text(`${isExpanded ? "▶" : "▼"} ${id}`);
+
+    d3.selectAll(`[data-parent='${id}']`)
+      .style("display", isExpanded ? "none" : "")
+      .attr("data-expanded", "false");
+  };
 });
