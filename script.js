@@ -19,7 +19,7 @@ d3.csv("data.csv").then(data => {
   ];
 
   // Initialize the Frappe DataTable
-  new frappe.DataTable('#tree-table-container', {
+  new DataTable('#tree-table-container', {
     columns: columns,
     data: treeData,
     treeView: true, // Enable tree view mode
