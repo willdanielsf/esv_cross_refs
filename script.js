@@ -1,14 +1,19 @@
 d3.csv("data.csv").then(data => {
   // Create a hierarchical structure from CSV data
-  const buildTreeData = (rows, parentId = '') =>
-    rows
+  const buildTreeData = (rows, parentId = '', processedIds = new Set()) => {
+    // Prevent infinite recursion by checking if the parentId has already been processed
+    if (processedIds.has(parentId)) return [];
+    processedIds.add(parentId); // Mark this parentId as processed
+
+    return rows
       .filter(row => row.parent === parentId)
       .map(row => ({
         id: row.id,
-        name: row.id, // Display name (you can modify this to match the column name)
+        name: row.word, // You can adjust this to any other field
         value: row.value,
-        children: buildTreeData(rows, row.id), // Recursive call to build children
+        children: buildTreeData(rows, row.id, processedIds), // Recursive call to build children
       }));
+  };
 
   const treeData = buildTreeData(data);
 
