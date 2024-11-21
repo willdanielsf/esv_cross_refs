@@ -4,8 +4,8 @@ d3.csv("data.csv").then(data => {
   const chapterSelect = document.getElementById("chapter-select");
 
   // Get unique books and chapters
-  const books = [...new Set(data.map(row => row.Book))];
-  const chapters = [...new Set(data.map(row => row.Chapter))];
+  const books = [...new Set(data.map(row => row.book))];
+  const chapters = [...new Set(data.map(row => row.chapter))];
 
   // Populate the book dropdown
   books.forEach(book => {
