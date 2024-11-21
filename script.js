@@ -1,4 +1,4 @@
-d3.csv("data.csv").then(data => {
+d3.csv("cross_references.csv").then(data => {
   // Populate Book and Chapter Select dropdowns dynamically
   const bookSelect = document.getElementById("book-select");
   const chapterSelect = document.getElementById("chapter-select");
