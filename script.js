@@ -15,6 +15,81 @@ d3.csv("data.csv").then(data => {
     bookSelect.appendChild(option);
   });
 
+  // Populate the chapter dropdown
+  chapters.forEach(chapter => {
+    const option = document.createElement("option");
+    option.value = chapter;
+    option.textContent = chapter;
+    chapterSelect.appendChild(option);
+  });
+
+  // Function to filter data by selected book and chapter
+  const filterData = (book, chapter) => {
+    return data.filter(row => {
+      const matchBook = book ? row.book === book : true;
+      const matchChapter = chapter ? row.chapter === chapter : true;
+      return matchBook && matchChapter;
+    });
+  };
+
+  // Function to update the table with filtered data
+  const updateTable = (filteredData) => {
+    const columns = [
+      { id: 'book', name: 'Book', editable: false, width: 150 },
+      { id: 'chapter', name: 'Chapter', editable: false, width: 100 },
+      { id: 'verse', name: 'Verse', editable: false, width: 100 },
+      { id: 'letter', name: 'Letter', editable: false, width: 100 },
+      { id: 'word', name: 'Word', editable: false, width: 100 },
+      { id: 'word_index', name: 'Word Index', editable: false, width: 100 },
+      { id: 'original_book', name: 'Original Book', editable: false, width: 150 },
+      { id: 'original_chapter', name: 'Original Chapter', editable: false, width: 150 },
+      { id: 'reverse_ref', name: 'Reverse Ref', editable: false, width: 150 },
+      { id: 'cross_ref_text', name: 'Cross Ref Text', editable: false, width: 150 },
+      { id: 'testament', name: 'Testament', editable: false, width: 150 },
+      { id: 'all_refs', name: 'All Refs', editable: false, width: 200 },
+    ];
+
+    // Reinitialize the Frappe DataTable with filtered data
+    new DataTable('#tree-table-container', {
+      columns: columns,
+      data: filteredData,
+      layout: 'fluid', // Responsive layout
+      inlineFilters: true, // Allow filtering
+    });
+  };
+
+  // Listen to the submit button click event
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    const selectedBook = bookSelect.value;
+    const selectedChapter = chapterSelect.value;
+
+    // Filter data based on selected book and chapter
+    const filteredData = filterData(selectedBook, selectedChapter);
+
+    // Update the table with the filtered data
+    updateTable(filteredData);
+  });
+});
+
+////////////////////////////////////
+/**
+d3.csv("data.csv").then(data => {
+  // Populate Book and Chapter Select dropdowns dynamically
+  const bookSelect = document.getElementById("book-select");
+  const chapterSelect = document.getElementById("chapter-select");
+
+  // Get unique books and chapters
+  const books = [...new Set(data.map(row => row.book))];
+  const chapters = [...new Set(data.map(row => row.chapter))];
+
+  // Populate the book dropdown
+  books.forEach(book => {
+    const option = document.createElement("option");
+    option.value = book;
+    option.textContent = book;
+    bookSelect.appendChild(option);
+  });
+
   // Populate the chapter dropdown (for now, for all chapters)
   chapters.forEach(chapter => {
     const option = document.createElement("option");
@@ -86,6 +161,7 @@ d3.csv("data.csv").then(data => {
   });
 
 });
+*/
 ////////////////////////////////////////////////////////////////////
 /**d3.csv("data.csv").then(data => {
   // Create a hierarchical structure from CSV data
