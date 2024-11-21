@@ -4,8 +4,8 @@ d3.csv("cross_references.csv").then(data => {
   const chapterSelect = document.getElementById("chapter-select");
 
   // Get unique books and chapters
-  const books = [...new Set(data.map(row => row.book))];
-  const chapters = [...new Set(data.map(row => row.chapter))];
+  const books = [...new Set(data.map(row => row.Book))];
+  const chapters = [...new Set(data.map(row => row.Chapter))];
 
   // Populate the book dropdown
   books.forEach(book => {
@@ -26,8 +26,8 @@ d3.csv("cross_references.csv").then(data => {
   // Function to filter data by selected book and chapter
   const filterData = (book, chapter) => {
     return data.filter(row => {
-      const matchBook = book ? row.book === book : true;
-      const matchChapter = chapter ? row.chapter === chapter : true;
+      const matchBook = book ? row.Book === book : true;
+      const matchChapter = chapter ? row.Chapter === chapter : true;
       return matchBook && matchChapter;
     });
   };
