@@ -26,8 +26,8 @@ d3.csv("data.csv").then(data => {
   // Function to filter data by selected book and chapter
   const filterData = (book, chapter) => {
     return data.filter(row => {
-      const matchBook = book ? row.Book === book : true;
-      const matchChapter = chapter ? row.Chapter === chapter : true;
+      const matchBook = book ? row.book === book : true;
+      const matchChapter = chapter ? row.chapter === chapter : true;
       return matchBook && matchChapter;
     });
   };
