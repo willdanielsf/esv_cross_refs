@@ -1,3 +1,5 @@
-book,chapter,verse,letter,word,wordIndex,originalBook,originalChapter,reverseRef,crossRefText,testament,allRefs,parent,value
-Genesis,1,1,A,In,1,Genesis,1,Ref1,CrossRef1,Old,AllRefs1,,Value1
-Genesis,1,2,B,The,2,Genesis,1,Ref2,CrossRef2,Old,AllRefs2,,Value2
+id,parent,book,chapter,verse,letter,word,wordIndex,originalBook,originalChapter,reverseRef,crossRefText,testament,allRefs,value
+1,,Genesis,1,1,A,In,1,Genesis,1,Ref1,CrossRef1,Old,AllRefs1,Value1
+2,1,Genesis,1,2,B,The,2,Genesis,1,Ref2,CrossRef2,Old,AllRefs2,Value2
+3,1,Genesis,1,3,C,Word,3,Genesis,1,Ref3,CrossRef3,Old,AllRefs3,Value3
+4,2,Genesis,1,4,D,Text,4,Genesis,1,Ref4,CrossRef4,Old,AllRefs4,Value4
