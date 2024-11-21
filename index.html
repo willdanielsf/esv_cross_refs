@@ -21,11 +21,24 @@
 
 </head>
 <body>
-  <div id="tree-table-container"></div>
-  <p>Hello</p>
+  <!-- Select Book -->
+  <label for="book-select">Select Book:</label>
+  <select id="book-select">
+    <option value="">Select a Book</option>
+  </select>
 
-  <!-- Include Frappe DataTable JS 
-  <script src="https://cdn.jsdelivr.net/npm/frappe-datatable/dist/frappe-datatable.min.js"></script> -->
+  <!-- Select Chapter -->
+  <label for="chapter-select">Select Chapter:</label>
+  <select id="chapter-select">
+    <option value="">Select a Chapter</option>
+  </select>
+
+  <!-- Submit Button -->
+  <button id="submit-btn">Submit</button>
+
+  <!-- Table Container -->
+  <div id="tree-table-container"></div>
+  
   <script src="script.js"></script>
 </body>
 </html>
