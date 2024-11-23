@@ -57,7 +57,7 @@
                             <span class="text-muted">(?)</span>
                         </button>
                         <div id="note-reverse" class="collapse text-muted">
-                            Click to view the reverse reference only.
+                            Click to view the reverse reference only. The cross reference letter is in the brackets.
                         </div>
                     </th>
                     <th>
@@ -193,7 +193,7 @@
                     tr.innerHTML = `
                         <td>${buildAllRefsUrl(filteredData, row.Book, row.Chapter, row.Verse)}</td>
                         <td>${buildTestamentUrl(filteredData, row.Book, row.Chapter, row.Verse, row.Testament)}</td>
-                        <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]}</a>` : ""}</td>
+                        <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]} [${row["Letter"]}]</a>` : ""}</td>
                         <td>${row["Cross Ref Text"] || ""}</td>
                     `;
                     tableBody.appendChild(tr);
