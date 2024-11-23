@@ -19,6 +19,9 @@
                 <select id="chapter-select" class="form-select"></select>
             </div>
         </div>
+        <div class="my-3">
+            <button id="all-refs-btn" class="btn btn-primary">View All Reverse Refs for Chapter</button>
+        </div>
         <div class="form-check form-check-inline">
             <input class="form-check-input" type="checkbox" id="ot-checkbox" value="OT" checked>
             <label class="form-check-label" for="ot-checkbox">OT</label>
@@ -27,20 +30,51 @@
             <input class="form-check-input" type="checkbox" id="nt-checkbox" value="NT" checked>
             <label class="form-check-label" for="nt-checkbox">NT</label>
         </div>        
-        <button id="submit-btn" class="btn btn-primary mb-3">Submit</button>
         <table class="table table-striped" id="data-table">
             <thead>
                 <tr>
-                    <th>Verse</th>
-                    <th>All Refs</th>
-                    <th>Testament</th>
-                    <th>Reverse Ref</th>
-                    <th>Cross Ref Text</th>
+                    <th>
+                        Verse
+                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#note-verse" aria-expanded="false" aria-controls="note-verse">
+                            <span class="text-muted">(?)</span>
+                        </button>
+                        <div id="note-verse" class="collapse text-muted">
+                            Verse that is cross referenced. Click to view all references to the verse.
+                        </div>
+                    </th>
+                    <th>
+                        Testament
+                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#note-testament" aria-expanded="false" aria-controls="note-testament">
+                            <span class="text-muted">(?)</span>
+                        </button>
+                        <div id="note-testament" class="collapse text-muted">
+                            Testament of the reverse reference. Click "OT" or "NT" to view all references from that testament only.
+                        </div>
+                    </th>
+                    <th>
+                        Reverse Ref
+                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#note-reverse" aria-expanded="false" aria-controls="note-reverse">
+                            <span class="text-muted">(?)</span>
+                        </button>
+                        <div id="note-reverse" class="collapse text-muted">
+                            Click to view the reverse reference only.
+                        </div>
+                    </th>
+                    <th>
+                        Cross Ref Text
+                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#note-cross-ref" aria-expanded="false" aria-controls="note-cross-ref">
+                            <span class="text-muted">(?)</span>
+                        </button>
+                        <div id="note-cross-ref" class="collapse text-muted">
+                            The full cross reference text as it appears in the ESV.
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
+    
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -51,7 +85,24 @@
             const tableBody = document.querySelector("#data-table tbody");
     
             // Populate Book and Chapter dropdowns
-            const books = [...new Set(data.map(row => row.Book))];
+            const books = [
+                // Old Testament
+                "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
+                "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
+                "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
+                "Nehemiah", "Esther", "Job", "Psalms", "Proverbs",
+                "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations",
+                "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
+                "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk",
+                "Zephaniah", "Haggai", "Zechariah", "Malachi",
+                // New Testament
+                "Matthew", "Mark", "Luke", "John", "Acts",
+                "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
+                "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy",
+                "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
+                "1 Peter", "2 Peter", "1 John", "2 John", "3 John",
+                "Jude", "Revelation"
+            ];
             const chapters = [...new Set(data.map(row => row.Chapter))];
             books.forEach(book => {
                 const option = document.createElement("option");
@@ -110,7 +161,23 @@
 
                 if (matchingRefs.length > 0) {
                     const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
-                    return `<a href="${url}" target="_blank">View Collection</a>`;
+                    return `<a href="${url}" target="_blank">${verse}</a>`;
+                }
+                return "No Refs";
+            };
+
+            // Function to build All Chapter Refs URL
+            const buildAllChapterRefsUrl = (filteredData, book, chapter) => {
+                const matchingRefs = filteredData
+                    .filter(row =>
+                            row.Book === book &&
+                            row.Chapter === chapter
+                        )
+                    .map(row => row["Reverse Ref"])
+                    .filter(ref => ref);
+
+                if (matchingRefs.length > 0) {
+                    return `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
                 }
                 return "No Refs";
             };
@@ -124,7 +191,6 @@
                 filteredData.forEach(row => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td>${row.Verse || ""}</td>
                         <td>${buildAllRefsUrl(filteredData, row.Book, row.Chapter, row.Verse)}</td>
                         <td>${buildTestamentUrl(filteredData, row.Book, row.Chapter, row.Verse, row.Testament)}</td>
                         <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]}</a>` : ""}</td>
@@ -132,15 +198,67 @@
                     `;
                     tableBody.appendChild(tr);
                 });
+
+                const allRefsBtn = document.getElementById("all-refs-btn");
+                const url = buildAllChapterRefsUrl(filteredData, bookSelect.value, chapterSelect.value);
+                allRefsBtn.onclick = () => window.open(url, "_blank");
             };
     
-            // Handle submit button click
-            document.getElementById("submit-btn").addEventListener("click", () => {
+            // Add event listeners for dynamic updates
+            chapterSelect.addEventListener("change", updateTableOnChange);
+            document.getElementById("ot-checkbox").addEventListener("change", updateTableOnChange);
+            document.getElementById("nt-checkbox").addEventListener("change", updateTableOnChange);
+
+            // Function to dynamically update the table
+            function updateTableOnChange() {
                 const selectedBook = bookSelect.value;
                 const selectedChapter = chapterSelect.value;
                 const filteredData = filterData(selectedBook, selectedChapter);
                 updateTable(filteredData);
+            }
+
+            // Static dictionary for last chapters of each book
+            const lastChapters = {
+                "Genesis": 50,
+                "Exodus": 40,
+                "Leviticus": 27,
+                "Numbers": 36,
+                "Deuteronomy": 34,
+                "Joshua": 24,
+                "Judges": 21,
+                "Ruth": 4,
+                // Add more books and their last chapters here
+                "Matthew": 28,
+                "Mark": 16,
+                "Luke": 24,
+                "John": 21
+            };
+
+            // Function to update the chapter dropdown based on the selected book
+            const updateChapterDropdown = (book) => {
+                chapterSelect.innerHTML = ""; // Clear existing options
+                if (book && lastChapters[book]) {
+                    const lastChapter = lastChapters[book];
+                    for (let i = 1; i <= lastChapter; i++) {
+                        const option = document.createElement("option");
+                        option.value = i;
+                        option.textContent = i;
+                        chapterSelect.appendChild(option);
+                    }
+                }
+            };
+
+            // Event listener for book selection change
+            bookSelect.addEventListener("change", () => {
+                const selectedBook = bookSelect.value;
+                updateChapterDropdown(selectedBook); // Populate chapter dropdown
+                updateTableOnChange(); // Update the table
             });
+
+            updateChapterDropdown(bookSelect.value)
+
+            updateTableOnChange()
+
         });
     </script>
 </body>
