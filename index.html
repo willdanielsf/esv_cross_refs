@@ -359,7 +359,7 @@
 
         function getRevRefsForAll(book, chapter, verse) {
             return csv_data
-                .filter(row => row.Book === book && row.Chapter === chapter && row.Verse === verse)
+                .filter(row => row.Book === book && row.Chapter == chapter && row.Verse == verse)
                 .map(row => row["Reverse Ref"])
                 .filter(ref => ref);
         };
