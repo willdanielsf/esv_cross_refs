@@ -84,295 +84,361 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-        var csv_data;
+        // load csv data
+        const bookSelect = document.getElementById("book-select");
+        const chapterSelect = document.getElementById("chapter-select");
+        const tableBody = document.querySelector("#data-table tbody");
 
-        d3.csv("cross_references.csv").then(data => {
-            csv_data = data;
+        // Populate Book and Chapter dropdowns
+        const books = [
+            // Old Testament
+            "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
+            "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
+            "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
+            "Nehemiah", "Esther", "Job", "Psalms", "Proverbs",
+            "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations",
+            "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
+            "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk",
+            "Zephaniah", "Haggai", "Zechariah", "Malachi",
+            // New Testament
+            "Matthew", "Mark", "Luke", "John", "Acts",
+            "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
+            "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy",
+            "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
+            "1 Peter", "2 Peter", "1 John", "2 John", "3 John",
+            "Jude", "Revelation"
+        ];
 
-            const bookSelect = document.getElementById("book-select");
-            const chapterSelect = document.getElementById("chapter-select");
-            const tableBody = document.querySelector("#data-table tbody");
-    
-            // Populate Book and Chapter dropdowns
-            const books = [
-                // Old Testament
-                "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
-                "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
-                "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
-                "Nehemiah", "Esther", "Job", "Psalms", "Proverbs",
-                "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations",
-                "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
-                "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk",
-                "Zephaniah", "Haggai", "Zechariah", "Malachi",
-                // New Testament
-                "Matthew", "Mark", "Luke", "John", "Acts",
-                "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
-                "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy",
-                "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
-                "1 Peter", "2 Peter", "1 John", "2 John", "3 John",
-                "Jude", "Revelation"
-            ];
-            const chapters = [...new Set(data.map(row => row.Chapter))];
-            books.forEach(book => {
-                const option = document.createElement("option");
-                option.value = book;
-                option.textContent = book;
-                bookSelect.appendChild(option);
-            });
-            chapters.forEach(chapter => {
-                const option = document.createElement("option");
-                option.value = chapter;
-                option.textContent = chapter;
-                chapterSelect.appendChild(option);
-            });
-    
-            // Function to filter data by selected book, chapter, and checked Testaments
-            const filterData = (book, chapter) => {
-                const includeOT = document.getElementById("ot-checkbox").checked;
-                const includeNT = document.getElementById("nt-checkbox").checked;
-
-                return data.filter(row => {
-                    const matchBook = book ? row.Book === book : true;
-                    const matchChapter = chapter ? row.Chapter === chapter : true;
-                    const matchTestament =
-                        (row.Testament === "OT" && includeOT) ||
-                        (row.Testament === "NT" && includeNT);
-
-                    return matchBook && matchChapter && matchTestament;
-                });
-            };
-    
-            // Function to build Testament URL
-            const buildTestamentUrl = (filteredData, book, chapter, verse, testament) => {
-                const matchingRefs = filteredData
-                    .filter(row =>
-                        row.Book === book &&
-                        row.Chapter === chapter &&
-                        row.Verse === verse &&
-                        row.Testament === testament
-                    )
-                    .map(row => row["Reverse Ref"])
-                    .filter(ref => ref);
-
-                if (matchingRefs.length > 0) {
-                    const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
-                    return `<a href="${url}" target="_blank">${testament}</a>`;
-                }
-                return testament || "";
-            };
-
-            const getAllRevRefs = (filteredData, book, chapter, verse) => {
-                return filteredData
-                    .filter(row => row.Book === book && row.Chapter === chapter && row.Verse === verse)
-                    .map(row => row["Reverse Ref"])
-                    .filter(ref => ref);
-            };
-    
-            // Function to build All Refs URL
-            const buildAllRevRefsUrl = (filteredData, book, chapter, verse) => {
-                // const matchingRefs = filteredData
-                //     .filter(row => row.Book === book && row.Chapter === chapter && row.Verse === verse)
-                //     .map(row => row["Reverse Ref"])
-                //     .filter(ref => ref);
-
-                const matchingRefs = getAllRevRefs(filteredData, book, chapter, verse)
-
-                if (matchingRefs.length > 0) {
-                    const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
-                    return `<a href="${url}" target="_blank">Rev</a>`;
-                }
-                return "No Rev Refs";
-            };
-
-            // Function to build All Chapter Refs URL
-            const buildAllChapterRefsUrl = (filteredData, book, chapter) => {
-                const matchingRefs = filteredData
-                    .filter(row =>
-                            row.Book === book &&
-                            row.Chapter === chapter
-                        )
-                    .map(row => row["Reverse Ref"])
-                    .filter(ref => ref);
-
-                if (matchingRefs.length > 0) {
-                    return `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
-                }
-                return "No Refs";
-            };
-    
-            // Function to update the table with filtered data
-            const updateTable = (filteredData) => {
-                // Clear the table body
-                tableBody.innerHTML = "";
-    
-                // Populate the table with filtered data
-                filteredData.forEach(row => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>
-                            <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#verse${row.Verse}-options">
-                                ${row.Verse}
-                            </button>
-                            <div id="verse${row.Verse}-options" class="collapse">
-                                <div 
-                                    class="text-primary text-decoration-underline" 
-                                    role="button" 
-                                    onclick="viewAllRefsForVerse('${row.Book}', ${row.Chapter}, ${row.Verse})"
-                                >
-                                    All
-                                </div>
-                                ${buildAllRevRefsUrl(filteredData, row.Book, row.Chapter, row.Verse)}
-                                <div 
-                                    class="text-primary text-decoration-underline" 
-                                    role="button" 
-                                    onclick="viewFwdRefsForVerse('${row.Book}', ${row.Chapter}, ${row.Verse})"
-                                >
-                                    Fwd
-                                </div>
-
-                            </div>
-                        </td>
-                        <td>${buildTestamentUrl(filteredData, row.Book, row.Chapter, row.Verse, row.Testament)}</td>
-                        <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]} [${row["Letter"]}]</a>` : ""}</td>
-                        <td>${row["Cross Ref Text"] || ""}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-
-                const allRefsBtn = document.getElementById("all-refs-btn");
-                const url = buildAllChapterRefsUrl(filteredData, bookSelect.value, chapterSelect.value);
-                allRefsBtn.onclick = () => window.open(url, "_blank");
-            };
-    
-            // Add event listeners for dynamic updates
-            chapterSelect.addEventListener("change", updateTableOnChange);
-            document.getElementById("ot-checkbox").addEventListener("change", updateTableOnChange);
-            document.getElementById("nt-checkbox").addEventListener("change", updateTableOnChange);
-
-            // Function to dynamically update the table
-            function updateTableOnChange() {
-                const selectedBook = bookSelect.value;
-                const selectedChapter = chapterSelect.value;
-                const filteredData = filterData(selectedBook, selectedChapter);
-                updateTable(filteredData);
-            }
-
-            // Static dictionary for last chapters of each book
-            const lastChapters = {
-                // Old Testament
-                "Genesis": 50,
-                "Exodus": 40,
-                "Leviticus": 27,
-                "Numbers": 36,
-                "Deuteronomy": 34,
-                "Joshua": 24,
-                "Judges": 21,
-                "Ruth": 4,
-                "1 Samuel": 31,
-                "2 Samuel": 24,
-                "1 Kings": 22,
-                "2 Kings": 25,
-                "1 Chronicles": 29,
-                "2 Chronicles": 36,
-                "Ezra": 10,
-                "Nehemiah": 13,
-                "Esther": 10,
-                "Job": 42,
-                "Psalms": 150,
-                "Proverbs": 31,
-                "Ecclesiastes": 12,
-                "Song of Solomon": 8,
-                "Isaiah": 66,
-                "Jeremiah": 52,
-                "Lamentations": 5,
-                "Ezekiel": 48,
-                "Daniel": 12,
-                "Hosea": 14,
-                "Joel": 3,
-                "Amos": 9,
-                "Obadiah": 1,
-                "Jonah": 4,
-                "Micah": 7,
-                "Nahum": 3,
-                "Habakkuk": 3,
-                "Zephaniah": 3,
-                "Haggai": 2,
-                "Zechariah": 14,
-                "Malachi": 4,
-
-                // New Testament
-                "Matthew": 28,
-                "Mark": 16,
-                "Luke": 24,
-                "John": 21,
-                "Acts": 28,
-                "Romans": 16,
-                "1 Corinthians": 16,
-                "2 Corinthians": 13,
-                "Galatians": 6,
-                "Ephesians": 6,
-                "Philippians": 4,
-                "Colossians": 4,
-                "1 Thessalonians": 5,
-                "2 Thessalonians": 3,
-                "1 Timothy": 6,
-                "2 Timothy": 4,
-                "Titus": 3,
-                "Philemon": 1,
-                "Hebrews": 13,
-                "James": 5,
-                "1 Peter": 5,
-                "2 Peter": 3,
-                "1 John": 5,
-                "2 John": 1,
-                "3 John": 1,
-                "Jude": 1,
-                "Revelation": 22
-            };
-
-
-            // Function to update the chapter dropdown based on the selected book
-            const updateChapterDropdown = (book) => {
-                chapterSelect.innerHTML = ""; // Clear existing options
-                if (book && lastChapters[book]) {
-                    const lastChapter = lastChapters[book];
-                    for (let i = 1; i <= lastChapter; i++) {
-                        const option = document.createElement("option");
-                        option.value = i;
-                        option.textContent = i;
-                        chapterSelect.appendChild(option);
-                    }
-                }
-            };
-
-            // Event listener for book selection change
-            bookSelect.addEventListener("change", () => {
-                const selectedBook = bookSelect.value;
-                updateChapterDropdown(selectedBook); // Populate chapter dropdown
-                updateTableOnChange(); // Update the table
-            });
-
-            updateChapterDropdown(bookSelect.value)
-
-            updateTableOnChange()
+        books.forEach(book => {
+            const option = document.createElement("option");
+            option.value = book;
+            option.textContent = book;
+            bookSelect.appendChild(option);
         });
 
-        function getRevRefsForAll(book, chapter, verse) {
-            return csv_data
-                .filter(row => row.Book === book && row.Chapter == chapter && row.Verse == verse)
+        // Function to filter data by selected book, chapter, and checked Testaments
+        function filterData(book, chapter) {
+            const includeOT = document.getElementById("ot-checkbox").checked;
+            const includeNT = document.getElementById("nt-checkbox").checked;
+
+            return csv_data.filter(row => {
+                const matchBook = book ? row.Book === book : true;
+                const matchChapter = chapter ? row.Chapter === chapter : true;
+                const matchTestament =
+                    (row.Testament === "OT" && includeOT) ||
+                    (row.Testament === "NT" && includeNT);
+
+                return matchBook && matchChapter && matchTestament;
+            });
+        };
+
+        let filtered_data;
+
+        // Function to build Testament URL
+        function buildTestamentUrl(book, chapter, verse, testament) {
+            const matchingRefs = filtered_data
+                .filter(row =>
+                    row.Book === book &&
+                    row.Chapter === chapter &&
+                    row.Verse === verse &&
+                    row.Testament === testament
+                )
+                .map(row => row["Reverse Ref"])
+                .filter(ref => ref);
+
+            if (matchingRefs.length > 0) {
+                const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
+                return `<a href="${url}" target="_blank">${testament}</a>`;
+            }
+            return testament || "";
+        };
+
+        // Function to build All Refs URL
+        function buildAllRevRefsUrl(book, chapter, verse) {
+            const matchingRefs = getAllRevRefs(book, chapter, verse)
+
+            if (matchingRefs.length > 0) {
+                const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
+                return `<a href="${url}" target="_blank">Rev</a>`;
+            }
+            return "No Rev Refs";
+        };
+
+        // Function to build All Chapter Refs URL
+        function buildAllChapterRefsUrl(book, chapter) {
+            const matchingRefs = filtered_data
+                .filter(row =>
+                        row.Book === book &&
+                        row.Chapter === chapter
+                    )
+                .map(row => row["Reverse Ref"])
+                .filter(ref => ref);
+
+            const fwd_refs = getFwdRefRowsForChapter(book, chapter);
+            fwd_refs.forEach(fwd_ref_row => {
+                matchingRefs.push(`${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`)
+            })
+
+            if (matchingRefs.length > 0) {
+                return `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
+            }
+            return "No Refs";
+        };
+
+        // Function to update the table with filtered data
+        function updateTable() {
+            const selectedBook = bookSelect.value;
+            const selectedChapter = chapterSelect.value;
+            filtered_data = filterData(selectedBook, selectedChapter);
+
+            // Clear the table body
+            tableBody.innerHTML = "";
+
+            // Populate the table with filtered data
+            filtered_data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#verse${row.Verse}-options">
+                            ${row.Verse}
+                        </button>
+                        <div id="verse${row.Verse}-options" class="collapse">
+                            <div 
+                                class="text-primary text-decoration-underline" 
+                                role="button" 
+                                onclick="viewAllRefsForVerse('${row.Book}', ${row.Chapter}, ${row.Verse})"
+                            >
+                                All
+                            </div>
+                            ${buildAllRevRefsUrl(row.Book, row.Chapter, row.Verse)}
+                            <div 
+                                class="text-primary text-decoration-underline" 
+                                role="button" 
+                                onclick="viewFwdRefsForVerse('${row.Book}', ${row.Chapter}, ${row.Verse})"
+                            >
+                                Fwd
+                            </div>
+
+                        </div>
+                    </td>
+                    <td>${buildTestamentUrl(row.Book, row.Chapter, row.Verse, row.Testament)}</td>
+                    <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]} [${row["Letter"]}]</a>` : ""}</td>
+                    <td>${row["Cross Ref Text"] || ""}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            insert_forward_refs();
+
+            const allRefsBtn = document.getElementById("all-refs-btn");
+            const url = buildAllChapterRefsUrl(bookSelect.value, chapterSelect.value);
+            allRefsBtn.onclick = () => window.open(url, "_blank");
+        };
+
+        function insert_forward_refs() {
+            const selectedBook = bookSelect.value;
+            const selectedChapter = chapterSelect.value;
+            const forward_refs = getFwdRefRowsForChapter(selectedBook, selectedChapter);
+            const refPattern = /.+:(\d+)$/;
+
+            function populate_fwd_ref_row(fwd_ref_row, table_row) {
+                // Add cells and content to the new row
+                const newCell0 = table_row.insertCell(0);
+                const newCell1 = table_row.insertCell(1);
+                const newCell2 = table_row.insertCell(2);
+                const newCell3 = table_row.insertCell(3);
+                newCell2.textContent = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+                newCell3.textContent = fwd_ref_row["Cross Ref Text"];
+            }
+
+            forward_refs.forEach(fwd_ref_row => {
+
+                var inserted = false;
+
+                // find verse row in table to insert fwd ref before
+                for (let i = 0; i < tableBody.rows.length; i++) {
+                    const row = tableBody.rows[i];
+                    if (!row.cells[0].innerHTML) {
+                        continue
+                    }
+                    const verse = row.cells[0].children[0].textContent.trim()
+    
+                    // Check a condition (e.g., text content of the first cell)
+                    if (verse > fwd_ref_row['Verse']) {
+                        // Create a new row
+                        const newRow = tableBody.insertRow(i); // Insert before the current row
+                        populate_fwd_ref_row(fwd_ref_row, newRow)
+                        inserted = true;
+                        // increment to skip inserted row
+                        i++;
+                        break;
+                    }
+
+                }
+
+                if (!inserted) {
+                    // Create a new row
+                    const newRow = tableBody.insertRow(); // Insert before the current row
+                    populate_fwd_ref_row(fwd_ref_row, newRow)
+                }
+
+            })
+        }
+
+        // Add event listeners for dynamic updates
+        chapterSelect.addEventListener("change", updateTable);
+        document.getElementById("ot-checkbox").addEventListener("change", updateTable);
+        document.getElementById("nt-checkbox").addEventListener("change", updateTable);
+
+        // Static dictionary for last chapters of each book
+        const lastChapters = {
+            // Old Testament
+            "Genesis": 50,
+            "Exodus": 40,
+            "Leviticus": 27,
+            "Numbers": 36,
+            "Deuteronomy": 34,
+            "Joshua": 24,
+            "Judges": 21,
+            "Ruth": 4,
+            "1 Samuel": 31,
+            "2 Samuel": 24,
+            "1 Kings": 22,
+            "2 Kings": 25,
+            "1 Chronicles": 29,
+            "2 Chronicles": 36,
+            "Ezra": 10,
+            "Nehemiah": 13,
+            "Esther": 10,
+            "Job": 42,
+            "Psalms": 150,
+            "Proverbs": 31,
+            "Ecclesiastes": 12,
+            "Song of Solomon": 8,
+            "Isaiah": 66,
+            "Jeremiah": 52,
+            "Lamentations": 5,
+            "Ezekiel": 48,
+            "Daniel": 12,
+            "Hosea": 14,
+            "Joel": 3,
+            "Amos": 9,
+            "Obadiah": 1,
+            "Jonah": 4,
+            "Micah": 7,
+            "Nahum": 3,
+            "Habakkuk": 3,
+            "Zephaniah": 3,
+            "Haggai": 2,
+            "Zechariah": 14,
+            "Malachi": 4,
+
+            // New Testament
+            "Matthew": 28,
+            "Mark": 16,
+            "Luke": 24,
+            "John": 21,
+            "Acts": 28,
+            "Romans": 16,
+            "1 Corinthians": 16,
+            "2 Corinthians": 13,
+            "Galatians": 6,
+            "Ephesians": 6,
+            "Philippians": 4,
+            "Colossians": 4,
+            "1 Thessalonians": 5,
+            "2 Thessalonians": 3,
+            "1 Timothy": 6,
+            "2 Timothy": 4,
+            "Titus": 3,
+            "Philemon": 1,
+            "Hebrews": 13,
+            "James": 5,
+            "1 Peter": 5,
+            "2 Peter": 3,
+            "1 John": 5,
+            "2 John": 1,
+            "3 John": 1,
+            "Jude": 1,
+            "Revelation": 22
+        };
+
+        const old_testament_books = new Set([
+            "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", 
+            "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", 
+            "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", 
+            "Psalms", "Psalm", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", 
+            "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", 
+            "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", 
+            "Haggai", "Zechariah", "Malachi"
+        ])
+
+        // Function to update the chapter dropdown based on the selected book
+        function updateChapterDropdown(book) {
+            chapterSelect.innerHTML = ""; // Clear existing options
+            if (book && lastChapters[book]) {
+                const lastChapter = lastChapters[book];
+                for (let i = 1; i <= lastChapter; i++) {
+                    const option = document.createElement("option");
+                    option.value = i;
+                    option.textContent = i;
+                    chapterSelect.appendChild(option);
+                }
+            }
+        };
+
+        // Event listener for book selection change
+        bookSelect.addEventListener("change", () => {
+            const selectedBook = bookSelect.value;
+            updateChapterDropdown(selectedBook); // Populate chapter dropdown
+            updateTable(); // Update the table
+        });
+
+        updateChapterDropdown(bookSelect.value)
+
+        function getAllRevRefs(book, chapter, verse) {
+            return filtered_data
+                .filter(row => row.Book === book && row.Chapter === chapter && row.Verse === verse)
                 .map(row => row["Reverse Ref"])
                 .filter(ref => ref);
         };
 
         function getFwdRefsForVerse(book, chapter, verse) {
+            const includeOT = document.getElementById("ot-checkbox").checked;
+            const includeNT = document.getElementById("nt-checkbox").checked;
             return csv_data
-                .filter(row => row["Reverse Ref"] === `${book} ${chapter}:${verse}`)
+                .filter(row => {
+                    const result = 
+                        row["Reverse Ref"] === `${book} ${chapter}:${verse}` &&
+                        (
+                            (includeOT && old_testament_books.has(row['Book'])) ||
+                            (includeNT && !(old_testament_books.has(row['Book'])))
+                        );
+                    return result
+                })
                 .map(row => `${row.Book} ${row.Chapter}:${row.Verse}`)
                 // .filter(ref => ref);
         }
 
+        function getFwdRefRowsForChapter(book, chapter) {
+            const includeOT = document.getElementById("ot-checkbox").checked;
+            const includeNT = document.getElementById("nt-checkbox").checked;
+            const refPattern = new RegExp(`^${book} ${chapter}:\\d+$`);
+            return csv_data
+                .filter(row => {
+                    const result = 
+                        refPattern.test(row["Reverse Ref"]) &&
+                        (
+                            (includeOT && old_testament_books.has(row['Book'])) ||
+                            (includeNT && !(old_testament_books.has(row['Book'])))
+                        );
+                    return result
+                })
+                // .filter(ref => ref);
+        }
+
         function getAllRefsForVerse(book, chapter, verse) {
-            rev_refs = getRevRefsForAll(book, chapter, verse);
+            rev_refs = getAllRevRefs(book, chapter, verse);
             fwd_refs = getFwdRefsForVerse(book, chapter, verse);
             return [...fwd_refs, ...rev_refs]
         }
@@ -388,6 +454,14 @@
             const url = `https://esv.org/${all_refs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
             window.open(url, '_blank');
         }
+
+        let csv_data;
+        let chapters;
+
+        d3.csv("cross_references.csv").then(data => {
+            csv_data = data;
+            updateTable();
+        });
     </script>
 </body>
 </html>
