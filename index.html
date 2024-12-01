@@ -181,7 +181,10 @@
             if (document.getElementById("fwd-ref-checkbox").checked) {
                 const fwd_refs = getFwdRefRowsForChapter(book, chapter);
                 fwd_refs.forEach(fwd_ref_row => {
-                    matchingRefs.push(`${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`)
+                    const ref_text = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+                    if (!matchingRefs.includes(ref_text)) {
+                        matchingRefs.push(ref_text);
+                    }
                 })
             }
 
@@ -249,7 +252,7 @@
             const forward_refs = getFwdRefRowsForChapter(selectedBook, selectedChapter);
             const refPattern = /.+:(\d+)$/;
 
-            function populate_fwd_ref_row(fwd_ref_row, table_row) {
+            function populate_fwd_ref_row(fwd_ref_row, table_row, fwd_ref_verse) {
                 table_row.classList.add('table-secondary');
                 // Add cells and content to the new row
                 const newCell0 = table_row.insertCell(0);
@@ -257,27 +260,32 @@
                 const newCell2 = table_row.insertCell(2);
                 const newCell3 = table_row.insertCell(3);
                 const ref = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+                newCell0.textContent = `${fwd_ref_verse}`
                 newCell2.innerHTML = `<a href="https://esv.org/${ref.replace(/ /g, '+')}" target="_blank">${ref}</a>`
                 newCell3.textContent = fwd_ref_row["Cross Ref Text"];
             }
 
             forward_refs.forEach(fwd_ref_row => {
 
+                const fwd_ref_verse = parseInt(fwd_ref_row['Reverse Ref'].match(refPattern)[1]);
+
                 var inserted = false;
 
                 // find verse row in table to insert fwd ref before
                 for (let i = 0; i < tableBody.rows.length; i++) {
                     const row = tableBody.rows[i];
-                    if (!row.cells[0].innerHTML) {
-                        continue
+                    var verse;
+                    if (row.cells[0].children[0] === undefined) {
+                        verse = parseInt(row.cells[0].textContent)
+                    } else {
+                        verse = parseInt(row.cells[0].children[0].textContent)
                     }
-                    const verse = row.cells[0].children[0].textContent.trim()
     
                     // Check a condition (e.g., text content of the first cell)
-                    if (verse > fwd_ref_row['Verse']) {
+                    if (verse > fwd_ref_verse) {
                         // Create a new row
                         const newRow = tableBody.insertRow(i); // Insert before the current row
-                        populate_fwd_ref_row(fwd_ref_row, newRow)
+                        populate_fwd_ref_row(fwd_ref_row, newRow, fwd_ref_verse)
                         inserted = true;
                         // increment to skip inserted row
                         i++;
@@ -289,7 +297,7 @@
                 if (!inserted) {
                     // Create a new row
                     const newRow = tableBody.insertRow(); // Insert before the current row
-                    populate_fwd_ref_row(fwd_ref_row, newRow)
+                    populate_fwd_ref_row(fwd_ref_row, newRow, fwd_ref_verse)
                 }
 
             })
@@ -451,7 +459,7 @@
         function getAllRefsForVerse(book, chapter, verse) {
             rev_refs = getAllRevRefs(book, chapter, verse);
             fwd_refs = getFwdRefsForVerse(book, chapter, verse);
-            return [...fwd_refs, ...rev_refs]
+            return Array.from( new Set([...fwd_refs, ...rev_refs]));
         }
 
         function viewFwdRefsForVerse(book, chapter, verse) {
