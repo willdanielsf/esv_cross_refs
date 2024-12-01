@@ -417,7 +417,7 @@
 
         function getAllRevRefs(book, chapter, verse) {
             return filtered_data
-                .filter(row => row.Book === book && row.Chapter === chapter && row.Verse === verse)
+                .filter(row => row.Book === book && row.Chapter == chapter && row.Verse == verse)
                 .map(row => row["Reverse Ref"])
                 .filter(ref => ref);
         };
