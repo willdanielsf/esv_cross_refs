@@ -35,6 +35,10 @@
             <input class="form-check-input" type="checkbox" id="nt-checkbox" value="NT" checked>
             <label class="form-check-label" for="nt-checkbox">NT</label>
         </div>        
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="fwd-ref-checkbox" value="Fwd_Refs" checked>
+            <label class="form-check-label" for="fwd-ref-checkbox">Forward Refs</label>
+        </div>        
         <table class="table table-striped" id="data-table">
             <thead>
                 <tr>
@@ -62,7 +66,7 @@
                             <span class="text-muted">(?)</span>
                         </button>
                         <div id="note-reverse" class="collapse text-muted">
-                            Click to view the reverse reference only. The cross reference letter is in the brackets.
+                            Click to view the reverse reference only. The cross reference letter is in the brackets. Grayed rows are Forward References.
                         </div>
                     </th>
                     <th>
@@ -174,10 +178,12 @@
                 .map(row => row["Reverse Ref"])
                 .filter(ref => ref);
 
-            const fwd_refs = getFwdRefRowsForChapter(book, chapter);
-            fwd_refs.forEach(fwd_ref_row => {
-                matchingRefs.push(`${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`)
-            })
+            if (document.getElementById("fwd-ref-checkbox").checked) {
+                const fwd_refs = getFwdRefRowsForChapter(book, chapter);
+                fwd_refs.forEach(fwd_ref_row => {
+                    matchingRefs.push(`${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`)
+                })
+            }
 
             if (matchingRefs.length > 0) {
                 return `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
@@ -228,7 +234,9 @@
                 tableBody.appendChild(tr);
             });
 
-            insert_forward_refs();
+            if (document.getElementById("fwd-ref-checkbox").checked) {
+                insert_forward_refs();
+            }
 
             const allRefsBtn = document.getElementById("all-refs-btn");
             const url = buildAllChapterRefsUrl(bookSelect.value, chapterSelect.value);
@@ -242,12 +250,14 @@
             const refPattern = /.+:(\d+)$/;
 
             function populate_fwd_ref_row(fwd_ref_row, table_row) {
+                table_row.classList.add('table-secondary');
                 // Add cells and content to the new row
                 const newCell0 = table_row.insertCell(0);
                 const newCell1 = table_row.insertCell(1);
                 const newCell2 = table_row.insertCell(2);
                 const newCell3 = table_row.insertCell(3);
-                newCell2.textContent = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+                const ref = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+                newCell2.innerHTML = `<a href="https://esv.org/${ref.replace(/ /g, '+')}" target="_blank">${ref}</a>`
                 newCell3.textContent = fwd_ref_row["Cross Ref Text"];
             }
 
@@ -289,6 +299,7 @@
         chapterSelect.addEventListener("change", updateTable);
         document.getElementById("ot-checkbox").addEventListener("change", updateTable);
         document.getElementById("nt-checkbox").addEventListener("change", updateTable);
+        document.getElementById("fwd-ref-checkbox").addEventListener("change", updateTable);
 
         // Static dictionary for last chapters of each book
         const lastChapters = {
