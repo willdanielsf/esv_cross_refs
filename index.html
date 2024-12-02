@@ -175,24 +175,71 @@
                         row.Book === book &&
                         row.Chapter === chapter
                     )
-                .map(row => row["Reverse Ref"])
+                .map(row => ({ref: row["Reverse Ref"], vs: row["Verse"]}))
                 .filter(ref => ref);
+
+            const refPattern = /.+:(\d+)$/;
 
             if (document.getElementById("fwd-ref-checkbox").checked) {
                 const fwd_refs = getFwdRefRowsForChapter(book, chapter);
                 fwd_refs.forEach(fwd_ref_row => {
                     const ref_text = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
-                    if (!matchingRefs.includes(ref_text)) {
-                        matchingRefs.push(ref_text);
+                    const fwd_ref_verse = parseInt(fwd_ref_row['Reverse Ref'].match(refPattern)[1]);
+                    var has_match = false;
+                    for (const existing_ref_vs of matchingRefs) {
+                        if (fwd_ref_verse == existing_ref_vs.vs && ref_text == existing_ref_vs.ref) {
+                            has_match = true;
+                            break;
+                        }
+                    }
+                    if (!has_match) {
+                        matchingRefs.push({ref: ref_text, vs: fwd_ref_verse});
                     }
                 })
             }
 
-            if (matchingRefs.length > 0) {
-                return `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
+            // sort in fwd refs
+            matchingRefs.sort((a, b) => a.vs - b.vs)
+
+            const ref_list = [];
+            var last_vs = 0;
+            for ({ref, vs} of matchingRefs) {
+                if (vs > last_vs) {
+                    last_vs = vs;
+                    ref_list.push(`${book} ${chapter}:${vs}`)
+                }
+                ref_list.push(ref)
             }
-            return "No Refs";
+
+            return `https://esv.org/${ref_list.map(ref => ref.replace(/ /g, '+')).join(';')}`;
         };
+
+        // OLD VERSION OF ABOVE^
+        // // Function to build All Chapter Refs URL
+        // function buildAllChapterRefsUrl(book, chapter) {
+        //     const matchingRefs = filtered_data
+        //         .filter(row =>
+        //                 row.Book === book &&
+        //                 row.Chapter === chapter
+        //             )
+        //         .map(row => row["Reverse Ref"])
+        //         .filter(ref => ref);
+
+        //     if (document.getElementById("fwd-ref-checkbox").checked) {
+        //         const fwd_refs = getFwdRefRowsForChapter(book, chapter);
+        //         fwd_refs.forEach(fwd_ref_row => {
+        //             const ref_text = `${fwd_ref_row["Book"]} ${fwd_ref_row["Chapter"]}:${fwd_ref_row["Verse"]}`;
+        //             matchingRefs.push(ref_text);
+        //         })
+        //     }
+
+        //     const matchingRefsUnique = Array.from( new Set(matchingRefs))
+
+        //     if (matchingRefsUnique.length > 0) {
+        //         return `https://esv.org/${matchingRefsUnique.map(ref => ref.replace(/ /g, '+')).join(';')}`;
+        //     }
+        //     return "No Refs";
+        // };
 
         // Function to update the table with filtered data
         function updateTable() {
