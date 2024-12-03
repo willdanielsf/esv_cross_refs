@@ -150,6 +150,8 @@
                 .map(row => row["Reverse Ref"])
                 .filter(ref => ref);
 
+            matchingRefs.unshift(`${book} ${chapter}:${verse}`)
+
             if (matchingRefs.length > 0) {
                 const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
                 return `<a href="${url}" target="_blank">${testament}</a>`;
@@ -160,6 +162,8 @@
         // Function to build All Refs URL
         function buildAllRevRefsUrl(book, chapter, verse) {
             const matchingRefs = getAllRevRefs(book, chapter, verse)
+
+            matchingRefs.unshift(`${book} ${chapter}:${verse}`)
 
             if (matchingRefs.length > 0) {
                 const url = `https://esv.org/${matchingRefs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
@@ -278,7 +282,7 @@
                         </div>
                     </td>
                     <td>${buildTestamentUrl(row.Book, row.Chapter, row.Verse, row.Testament)}</td>
-                    <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]} [${row["Letter"]}]</a>` : ""}</td>
+                    <td>${row["Reverse Ref"] ? `<a href="https://esv.org/${row.Book}+${row.Chapter}:${row.Verse};${row["Reverse Ref"].replace(/ /g, '+')}" target="_blank">${row["Reverse Ref"]} [${row["Letter"]}]</a>` : ""}</td>
                     <td>${row["Cross Ref Text"] || ""}</td>
                 `;
                 tableBody.appendChild(tr);
@@ -511,12 +515,14 @@
 
         function viewFwdRefsForVerse(book, chapter, verse) {
             fwd_refs = getFwdRefsForVerse(book, chapter, verse);
+            fwd_refs.unshift(`${book} ${chapter}:${verse}`)
             const url = `https://esv.org/${fwd_refs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
             window.open(url, '_blank');
         }
 
         function viewAllRefsForVerse(book, chapter, verse) {
             all_refs = getAllRefsForVerse(book, chapter, verse);
+            all_refs.unshift(`${book} ${chapter}:${verse}`)
             const url = `https://esv.org/${all_refs.map(ref => ref.replace(/ /g, '+')).join(';')}`;
             window.open(url, '_blank');
         }
